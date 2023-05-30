@@ -6,9 +6,11 @@ import { getRecipes } from './utils/getRecipes';
 import { IngredientModel } from './utils/ingredientModel';
 import { AppareilModel } from './utils/appareilModel';
 import { UstensilModel } from './utils/ustensilModel';
+import { filterSearch } from './utils/filterSearch';
 
 document.querySelector('#app').innerHTML = `
   <div>
+  <div id="container"></div>
     <header>
         <img src="${petitplatLogo}">
     </header>
@@ -22,21 +24,21 @@ document.querySelector('#app').innerHTML = `
       <div id="search_filter">
         <div id="ingredientFilter" class="specificFilter">
           <div class="hg25 inputFilter">Ingredient</div>
-          <button class="hg25 toggle_button ingredient_button">Down</button> 
+          <button id="ingredientButton" class="hg25 button"><i class="fa-solid fa-chevron-down"></i></button> 
           <div class="ingredientList">
             <div id="ingredient" class="list"></div>
           </div>
         </div>
         <div id="appareilFilter" class="specificFilter">
           <div class="hg25 inputFilter">Appareil</div>
-          <button class="hg25 toggle_button appareil_button">Down</button> 
+          <button id="appareilButton"class="hg25 button"><i class="fa-solid fa-chevron-down"></i></button> 
           <div class="appareilList">
             <div id="appareil" class="list"></div>
           </div>
         </div>
         <div id="ustensilFilter" class="specificFilter">
           <div class="hg25 inputFilter">Ustensil</div>
-          <button class="hg25 toggle_button ustensil_button">Down</button> 
+          <button id="ustensilButton"class="hg25 button"><i class="fa-solid fa-chevron-down"></i></button> 
           <div class="ustensilList">
             <div id="ustensil" class="list"></div>
           </div>
@@ -68,7 +70,7 @@ async function init() {
   const search_bar = document.getElementById('search_bar');
   search_bar.addEventListener('input', (e) => {
     const searchInput = e.target.value;
-    if (searchInput.length < 3) {
+    if (searchInput.length < 3 || tagTable == null) {
       displayData(recipes);
     } else {
       const result = search(searchInput, recipes);
@@ -82,6 +84,7 @@ async function init() {
 /* Filter specifique */
 
 let tagTable = [];
+const recipes = await data;
 
 async function initIngredient() {
   
@@ -90,27 +93,29 @@ async function initIngredient() {
   
   //Affichage de tous les ingredients dans une liste
   let ingredients = await ingredientModel.getIngredients();
-  console.log(ingredients)
 
   for (let i = 0; i < ingredients.length; i++) {
-  console.log(ingredients[i])
   ingr.innerHTML+=`<span index=${i} class="ingr">${ingredients[i]}</span>`
   }
   let span = document.querySelectorAll('.ingr')
   span.forEach(element => {
     element.addEventListener('click',()=>{
-      console.log(element.innerHTML)
       if(tagTable.includes(element.innerHTML)){
         console.log(element.innerHTML, "is already in tag container")
       }else{
         tagTable.push(element.innerHTML)
-        console.log(tagTable,"Tableau de Tag")
+        element.classList.add('alreadyClicked')
+        console.log(tagTable)
+        
+        const result = filterSearch(tagTable, recipes);
+        displayData(result)
+
         createTag(element)
         closeTag(tagTable)
       }
   })
   });
-  
+  displayData(recipes)
 }
 
 async function initAppareil(){
@@ -131,7 +136,9 @@ async function initAppareil(){
       console.log(tagTable)
       createTag(element)
       closeTag(tagTable)
+      
   })
+  
   });
 }
 
@@ -155,42 +162,78 @@ async function initUstensil(){
   });
 }
 
-function toggleState(){
+/*Toggle Button*/
 
-let toggleButton = document.querySelectorAll('.toggle_button')
-let ingr = document.getElementById('ingredient')
-let appa = document.getElementById('appareil')
-let use = document.getElementById('ustensil')
-
-toggleButton.forEach(element => {
-  element.addEventListener('click', () => {
-      if(element.innerHTML === 'Down'){
-        console.log(element.classList);
-        element.innerHTML = 'Up'
-        if (element.classList.contains('ingredient_button')){
-          ingr.style.display = 'grid'
-        }else if(element.classList.contains('appareil_button')){
-          appa.style.display = 'grid'
-        }else{
-          use.style.display = 'grid'
-        }
-      }else{
-        element.innerHTML = 'Down'
-        if (element.classList.contains('ingredient_button')){ 
-          ingr.style.display = 'none'
-        }else if(element.classList.contains('appareil_button')){
-          appa.style.display = 'none'
-        }else{
-          use.style.display = 'none'
-        }
+function toggleButtonState(buttonId) {
+  const buttons = document.querySelectorAll('.button');
+  
+  buttons.forEach(button => {
+    if (button.id === buttonId) {
+      if (button.classList.contains('ouvert')) {
+        button.classList.remove('ouvert');
+        button.innerHTML = `<i class="fa-solid fa-chevron-down"></i>`;
+        updateDivStyle(null);
+      } else {
+        button.classList.add('ouvert');
+        button.innerHTML = `<i class="fa-solid fa-chevron-up"></i>`;
+        updateDivStyle(buttonId);
       }
-    }) 
+    } else {
+      button.classList.remove('ouvert');
+      button.innerHTML = `<i class="fa-solid fa-chevron-down"></i>`;
+    }
+  });
+  
+}
+function updateDivStyle(buttonId) {
+  const divs = document.querySelectorAll('.list');
+  
+  divs.forEach(div => {
+    if (buttonId && div.id === buttonId.replace('Button', '')) {
+      div.classList.add('active');
+    } else {
+      div.classList.remove('active');
+    }
   });
 }
-toggleState();
+
+const ingredientButton = document.getElementById('ingredientButton');
+const appareilButton = document.getElementById('appareilButton');
+const ustensilButton = document.getElementById('ustensilButton');
+
+ingredientButton.addEventListener('click', function() {
+  toggleButtonState('ingredientButton');
+});
+
+appareilButton.addEventListener('click', function() {
+  toggleButtonState('appareilButton');
+});
+
+ustensilButton.addEventListener('click', function() {
+  toggleButtonState('ustensilButton');
+});
 
 
-/* TAG */ 
+
+
+/** 
+
+document.addEventListener("click", function(event) {
+  const searchFilter = document.getElementById("search_filter")
+  const active = document.getElementsByClassName("active");
+  
+  if (!searchFilter.contains(event.target)) {
+      console.log("Outside click detected!");
+      active[0].classList.remove("active")
+  }
+  else {
+      console.log("Inside click detected!");
+  }
+});*/
+
+
+
+/* Tag creation and delete */ 
 
 function createTag(element){
   let tagLine = document.getElementById("tag_container");
@@ -200,6 +243,7 @@ function createTag(element){
 
 function closeTag(tagTable){
   let close_btn = document.querySelectorAll('.close');
+  let span = document.querySelectorAll('.ingr')
   
   close_btn.forEach(element => {
     element.addEventListener('click', () => {
@@ -209,12 +253,24 @@ function closeTag(tagTable){
       tagTable.splice(index, 1);
       closestDiv.remove()
       console.log(tagTable)
+
+      span.forEach(element => {
+        if(paragraphText === element.innerHTML){
+           element.classList.remove('alreadyClicked')
+        }
+       
+      })
+      const resultfilter = filterSearch(tagTable, recipes);
+      displayData(resultfilter);
+
       return tagTable
   })
   });
 }
 
+
+
 initUstensil();
 initAppareil();
 initIngredient();
-init();
+init()

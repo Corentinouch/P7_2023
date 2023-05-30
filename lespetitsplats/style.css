@@ -1,3 +1,7 @@
+*{
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: large;
+}
 /*Header*/
 header {
   display: flex;
@@ -57,14 +61,26 @@ header {
  display: grid;
  grid-template-columns: repeat(12, 1fr);
  height: max-content;
+ border-radius:5px;
+ padding:15px;
+ margin:5px;
+ font-family: Arial, Helvetica, sans-serif;
+ font-size: large;
+ color:white;
 }
 .inputFilter{
   grid-column: 1/10;
 }
-.toggle_button{
-  grid-column: 10/13;
+.button{
+  grid-column: 12/13;
+    background: none;
+    border: none;
+    color: white;
+    font-size: large;
 }
-
+.list span, button{
+  cursor: pointer;
+}
 #ingredientFilter{
   background: #3282F7;
 }
@@ -73,21 +89,53 @@ header {
   
 }
 #ingredient{
- display: grid;
+  display: grid;
   grid-template-columns: repeat(3,1fr);
-  height:500px;
+  height:100px;
   overflow: scroll;
+  padding: 20px;
+  grid-gap: 10px;
 }
 #ingredient::-webkit-scrollbar {
   display: none;
 }
 
+#appareil{
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  height:100px;
+  overflow: scroll;
+  padding: 20px;
+  grid-gap: 10px;
+}
+#appareil::-webkit-scrollbar {
+  display: none;
+}
 #appareilFilter {
   background: #68D9A4;
 }
+.appareilList{
+  grid-column: 1/13;
 
+}
+
+#ustensil{
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  height:100px;
+  overflow: scroll;
+  padding: 20px;
+  grid-gap: 10px;
+}
+#ustensil::-webkit-scrollbar {
+  display: none;
+}
 #ustensilFilter {
   background: #ED6454;
+}
+
+.ustensilList{
+  grid-column: 1/13;
 }
 
 .inputFilter {
@@ -106,34 +154,19 @@ header {
   pointer-events: none;
 }
 
-#tag_error{
-  font-weight: bold;
-  font-family: Arial;
-  color: white;
-  display: none;
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  z-index: 10;
-  background: #ff5d5d;
-  padding: 8px 10px;
-  border-radius: 6px;
-  animation:disparition 400ms;
-  animation-delay: 0s;
+.active{
+  display: grid !important;
 }
-@keyframes disparition {
-  from{
-opacity:100%
-  }
-  to{
-opacity: 0%;
-  }
+.alreadyClicked{
+  display:none;
 }
 /*Recipes List*/
 
 #recipes_list {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  margin:auto;
+  width:90%;
 }
 
 @media(max-width: 1200px) {
