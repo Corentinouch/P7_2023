@@ -6,7 +6,7 @@ import { getRecipes } from './utils/getRecipes';
 import { IngredientModel } from './utils/ingredientModel';
 import { AppareilModel } from './utils/appareilModel';
 import { UstensilModel } from './utils/ustensilModel';
-import { filterSearch } from './utils/filterSearch';
+import { filterByIngredient, filterByAppliance, filterByUtensils, applyFilters } from './utils/filterSearch';
 
 document.querySelector('#app').innerHTML = `
   <div>
@@ -80,7 +80,6 @@ async function init() {
   displayData(recipes);
 }
 
-
 /* Filter specifique */
 
 let tagTable = [];
@@ -107,7 +106,7 @@ async function initIngredient() {
         element.classList.add('alreadyClicked')
         console.log(tagTable)
         
-        const result = filterSearch(tagTable, recipes);
+        const result = filterByIngredient(tagTable, recipes);
         displayData(result)
 
         createTag(element)
@@ -131,15 +130,20 @@ async function initAppareil(){
   let span = document.querySelectorAll('.appa')
   span.forEach(element => {
     element.addEventListener('click',()=>{
-      console.log(element.innerHTML)
-      tagTable.push(element.innerHTML)
-      console.log(tagTable)
-      createTag(element)
-      closeTag(tagTable)
-      
+      if(tagTable.includes(element.innerHTML)){
+        console.log(element.innerHTML, "is already in tag container")
+      }else{
+        tagTable.push(element.innerHTML)
+        element.classList.add('alreadyClicked')
+        console.log(tagTable)
+        const result = filterByAppliance(tagTable, recipes);
+        displayData(result)
+        createTag(element)
+        closeTag(tagTable)
+      }
   })
-  
   });
+  displayData(recipes)
 }
 
 async function initUstensil(){
@@ -153,13 +157,20 @@ async function initUstensil(){
   let span = document.querySelectorAll('.use')
   span.forEach(element => {
     element.addEventListener('click',()=>{
-      console.log(element.innerHTML)
-      tagTable.push(element.innerHTML)
-      console.log(tagTable)
-      createTag(element)
-      closeTag(tagTable)
+      if(tagTable.includes(element.innerHTML)){
+        console.log(element.innerHTML, "is already in tag container")
+      }else{
+        tagTable.push(element.innerHTML)
+        element.classList.add('alreadyClicked')
+        console.log(tagTable)
+        const result = filterByUtensils(tagTable, recipes);
+        displayData(result)
+        createTag(element)
+        closeTag(tagTable)
+      }
   })
   });
+  displayData(recipes)
 }
 
 /*Toggle Button*/
@@ -213,26 +224,6 @@ ustensilButton.addEventListener('click', function() {
   toggleButtonState('ustensilButton');
 });
 
-
-
-
-/** 
-
-document.addEventListener("click", function(event) {
-  const searchFilter = document.getElementById("search_filter")
-  const active = document.getElementsByClassName("active");
-  
-  if (!searchFilter.contains(event.target)) {
-      console.log("Outside click detected!");
-      active[0].classList.remove("active")
-  }
-  else {
-      console.log("Inside click detected!");
-  }
-});*/
-
-
-
 /* Tag creation and delete */ 
 
 function createTag(element){
@@ -240,10 +231,13 @@ function createTag(element){
   tagLine.innerHTML += `<div><p>${element.innerHTML}</p><button class="close"><i class="fa-sharp fa-solid fa-xmark"></i></button></div>`
 }
 
-
 function closeTag(tagTable){
   let close_btn = document.querySelectorAll('.close');
-  let span = document.querySelectorAll('.ingr')
+  let spaningr = document.querySelectorAll('.ingr')
+  let spanappa = document.querySelectorAll('.appa')
+  let spanuse = document.querySelectorAll('.use')
+
+
   
   close_btn.forEach(element => {
     element.addEventListener('click', () => {
@@ -254,21 +248,35 @@ function closeTag(tagTable){
       closestDiv.remove()
       console.log(tagTable)
 
-      span.forEach(element => {
+      spaningr.forEach(element => {
         if(paragraphText === element.innerHTML){
            element.classList.remove('alreadyClicked')
         }
-       
       })
-      const resultfilter = filterSearch(tagTable, recipes);
-      displayData(resultfilter);
+      spanappa.forEach(element => {
+        if(paragraphText === element.innerHTML){
+           element.classList.remove('alreadyClicked')
+        }
+      })
+      spanuse.forEach(element => {
+        if(paragraphText === element.innerHTML){
+           element.classList.remove('alreadyClicked')
+        }
+      })
 
+      const resultfilter = filterByIngredient(tagTable, recipes);
+      const resultappareil = filterByAppliance(tagTable, recipes);
+      const resultuse = filterByUtensils(tagTable, recipes);
+      let allfilter = resultfilter.concat(resultappareil,resultuse)
+      displayData(allfilter);
+      console.log(tagTable);
+      if(tagTable.length === 0){
+        displayData(recipes)
+      }
       return tagTable
-  })
+    })
   });
 }
-
-
 
 initUstensil();
 initAppareil();
