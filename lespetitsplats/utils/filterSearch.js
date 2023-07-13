@@ -1,100 +1,45 @@
-/*export function filterSearch(tagTable, recipes) {
-    const filteredTagIngredient = recipes.filter((recipe) =>{
-        return tagTable.every((tag) => {
-          console.log(recipe.ingredients);
-          console.log(recipe.ingredients.some((ingredient) => ingredient.ingredient.toLowerCase().includes(tag.toLowerCase())));
-            return recipe.ingredients.some(
-              (ingredient) => ingredient.ingredient.toLowerCase().includes(tag.toLowerCase())
-            );
-          });
-    })
-    //console.log(filteredTagIngredient, 'filtered ingredient');
-    return filteredTagIngredient
+ /*export function filterByIngredient(tagTable, recipes) {
+  let filteredTagIngredient = recipes.filter(recipe => {
+    const ingredientsTAB = recipe.ingredients.map(ingredient => ingredient.ingredient);
+    return tagTable.every(tag => ingredientsTAB.includes(tag));
+  });
+
+  console.log(filteredTagIngredient);
+  return filteredTagIngredient;
+}
+
+ export function filterByAppliance(tagTable, recipes) {
+  let filteredTagAppliance = recipes.filter(recipe => {
+    return tagTable.every(tag => recipe.appliance.includes(tag));
+  });
+
+  console.log(filteredTagAppliance);
+  return filteredTagAppliance;
+}
+ 
+ export function filterByUtensils(tagTable, recipes) {
+  let filteredTagUstensil = recipes.filter(recipe => {
+    return tagTable.every(tag => recipe.ustensils.includes(tag));
+  });
+
+  console.log(filteredTagUstensil);
+  return filteredTagUstensil;
 }*/
 
-export function filterByIngredient(tagTable, recipes) {
-  let filteredTagIngredient = []
-  recipes.forEach(recipe => {
-    //console.log(recipe.ingredients);
-    const ingredientsTAB = recipe.ingredients
-    ingredientsTAB.forEach(ingredient => {
-      //console.log(ingredient.ingredient);
-      console.log(tagTable);
-      if(tagTable.includes(ingredient.ingredient)){
-        console.log(recipe);
-        filteredTagIngredient.push(recipe)
-        return
-      }
-    });
-  });
-  console.log(filteredTagIngredient);
-  return filteredTagIngredient
-  ;
- }
+export function filterSearch(tags, recipes) {
+  let filteredRecipes = [...recipes]; // Copie les recettes dans un tableau filtré initial
 
-export function filterByAppliance(tagTable, recipes) {
-  let filteredTagAppliance = []
-  recipes.forEach(recipe => {
-    if(tagTable.includes(recipe.appliance)){
-      console.log(recipe);
-      filteredTagAppliance.push(recipe)
-      return
-    }
-  });
-  console.log(filteredTagAppliance);
-  return filteredTagAppliance
- }
-  
- export function filterByUtensils(tagTable, recipes) {
-  let filteredTagUstensil = []
-  recipes.forEach(recipe => {
-    const ustensils = recipe.ustensils;
-    ustensils.forEach(ustensil => {
-      //console.log(ustensil);
-      if(tagTable.includes(ustensil)){
-        console.log(recipe);
-        filteredTagUstensil.push(recipe)
-        return
-      }
-    });
-  });
-  console.log(filteredTagUstensil);
-  return filteredTagUstensil
- }
-  
-  
-  /*export function filterByUtensils(tagTable, recipes) {
-    const filteredTagUstensil = recipes.filter((recipe) => {
-      return tagTable.every((tag) => {
-        console.log(recipe.ustensils.some((utensil) => utensil.toLowerCase().includes(tag.toLowerCase())));
-        return recipe.ustensils.some(
-          (utensil) => utensil.toLowerCase().includes(tag.toLowerCase())
-        );
-      });
-    });
-  
-    //console.log(filteredTagUstensil);
-    return filteredTagUstensil;
-  }*/
-
-  export function applyFilters(tagTable, recipes) {
-    const filteredRecipes = recipes.filter((recipe) => {
+  tags.forEach(tag => { // Parcourt chaque tag dans le tableau des tags
+    filteredRecipes = filteredRecipes.filter(recipe => { // Filtre les recettes en fonction du tag actuel
+      const ingredients = recipe.ingredients.map(ingredient => ingredient.ingredient.toLowerCase()); // Récupère un tableau des noms d'ingrédients en minuscules
       return (
-        tagTable.every((tag) => {
-          return (
-            recipe.ingredients.some((ingredient) =>
-              ingredient.ingredient.toLowerCase().includes(tag.toLowerCase())
-            ) || filterTagAppliance
-            //recipe.appliance.toLowerCase().includes(tag.toLowerCase()) 
-            ||
-            recipe.ustensils.some((utensil) =>
-              utensil.toLowerCase().includes(tag.toLowerCase())
-            )
-          );
-        })
+        ingredients.includes(tag.toLowerCase()) || // Vérifie si le tag est inclus dans les ingrédients
+        recipe.appliance.toLowerCase().includes(tag.toLowerCase()) || // Vérifie si le tag est inclus dans l'appareil de la recette
+        recipe.ustensils.some(utensil => utensil.toLowerCase().includes(tag.toLowerCase())) // Vérifie si le tag est inclus dans les ustensiles de la recette
       );
     });
-  
-    console.log(filteredRecipes);
-    return filteredRecipes;
-  }
+  });
+
+  console.log(filteredRecipes); // Affiche les recettes filtrées dans la console
+  return filteredRecipes; // Retourne les recettes filtrées
+}

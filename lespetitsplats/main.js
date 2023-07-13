@@ -6,11 +6,10 @@ import { getRecipes } from './utils/getRecipes';
 import { IngredientModel } from './utils/ingredientModel';
 import { AppareilModel } from './utils/appareilModel';
 import { UstensilModel } from './utils/ustensilModel';
-import { filterByIngredient, filterByAppliance, filterByUtensils, applyFilters } from './utils/filterSearch';
+import { filterSearch/*filterByIngredient, filterByAppliance, filterByUtensils*/ } from './utils/filterSearch';
 
 document.querySelector('#app').innerHTML = `
   <div>
-  <div id="container"></div>
     <header>
         <img src="${petitplatLogo}">
     </header>
@@ -55,30 +54,137 @@ const ingredientModel = new IngredientModel();
 const appareilModel = new AppareilModel();
 const ustensilModel = new UstensilModel();
 
+let filteredRecipes = []; // Déclaration de la variable filteredRecipes en tant que variable globale
+
 async function displayData(recipes) {
   const recipesSection = document.getElementById('recipes_list');
   recipesSection.innerHTML = '';
-  recipes.forEach((recipe) => {
-    const recipeModel = recipeFactory(recipe);
-    const recipeCard = recipeModel.displayRecipeCard();
-    recipesSection.appendChild(recipeCard);
-  });
+
+  if (recipes.length === 0) {
+    const message = document.createElement('p');
+    message.classList.add('noRecipes_info')
+    const reinitialiser = document.createElement('button')
+    message.innerHTML = `<span>Aucune recette ne correspond à votre recherche.</span><br>Veuillez modifier celle-ci ou réinitialiser les filtres sur le bouton.`;
+    reinitialiser.textContent = 'Réinitialiser'
+    recipesSection.classList.add('noRecipes_section')
+    recipesSection.appendChild(message);
+    recipesSection.appendChild(reinitialiser);
+    reinitialiser.addEventListener('click', () =>{
+      location.reload()
+    })
+  } else {
+    recipesSection.classList.remove('noRecipes_section')
+    recipes.forEach((recipe) => {
+      const recipeModel = recipeFactory(recipe);
+      const recipeCard = recipeModel.displayRecipeCard();
+      recipesSection.appendChild(recipeCard);
+    });
+  }
 }
 
 async function init() {
   const recipes = await data;
   const search_bar = document.getElementById('search_bar');
+  const ingr = document.getElementById('ingredient');
+  const appa = document.getElementById('appareil');
+  const use = document.getElementById('ustensil');
+
+  ingr.style.display = 'none';
+  appa.style.display = 'none';
+  use.style.display = 'none';
+
+  const ingredientModel = new IngredientModel();
+  const appareilModel = new AppareilModel();
+  const ustensilModel = new UstensilModel();
+
+  let filteredRecipes = [...recipes];
+  let tagTable = [];
+
+  const updateRecipes = () => {
+    let result = filteredRecipes;
+
+    if (tagTable.length > 0) {
+      result = filterSearch(tagTable, result);
+    }
+
+    displayData(result);
+  };
+
+  const handleTagClick = (tag) => {
+    if (tagTable.includes(tag)) {
+      console.log(tag, 'is already in tag container');
+      return;
+    }
+  
+    tagTable.push(tag);
+    console.log(tagTable);
+  
+    const searchInput = search_bar.value.toLowerCase();
+    let result = recipes;
+  
+    if (searchInput.length >= 3) {
+      result = search(searchInput, result);
+      console.log('test');
+    }
+  
+    if (tagTable.length > 0) {
+      result = filterSearch(tagTable, result);
+    }
+  
+    filteredRecipes = result;
+    updateRecipes();
+    createTag(tag);
+    closeTag(tagTable);
+  };
+  
+
   search_bar.addEventListener('input', (e) => {
-    const searchInput = e.target.value;
-    if (searchInput.length < 3 || tagTable == null) {
-      displayData(recipes);
+    const searchInput = e.target.value.toLowerCase();
+
+    if (searchInput.length < 3) {
+      filteredRecipes = [...recipes];
     } else {
-      const result = search(searchInput, recipes);
-      displayData(result);
+      filteredRecipes = search(searchInput, recipes);
+    }
+
+    if (tagTable.length > 0) {
+      filteredRecipes = filterSearch(tagTable, filteredRecipes);
+    }
+
+    updateRecipes();
+  });
+
+  ingr.addEventListener('click', (e) => {
+    if (e.target.classList.contains('ingr')) {
+      const ingredient = e.target.innerHTML;
+      if (ingredient) {
+        handleTagClick(ingredient);
+      }
     }
   });
+
+  appa.addEventListener('click', (e) => {
+    if (e.target.classList.contains('appa')) {
+      const appareil = e.target.innerHTML;
+      if (appareil) {
+        handleTagClick(appareil);
+      }
+    }
+  });
+
+  use.addEventListener('click', (e) => {
+    if (e.target.classList.contains('use')) {
+      const ustensil = e.target.innerHTML;
+      if (ustensil) {
+        handleTagClick(ustensil);
+      }
+    }
+  });
+
   displayData(recipes);
 }
+
+
 
 /* Filter specifique */
 
@@ -86,92 +192,102 @@ let tagTable = [];
 const recipes = await data;
 
 async function initIngredient() {
-  
-  let ingr = document.getElementById('ingredient')
+  let ingr = document.getElementById('ingredient');
   ingr.style.display = "none";
-  
-  //Affichage de tous les ingredients dans une liste
+
+  let ingredientModel = new IngredientModel();
   let ingredients = await ingredientModel.getIngredients();
 
   for (let i = 0; i < ingredients.length; i++) {
-  ingr.innerHTML+=`<span index=${i} class="ingr">${ingredients[i]}</span>`
+    ingr.innerHTML += `<span index=${i} class="ingr">${ingredients[i]}</span>`;
   }
-  let span = document.querySelectorAll('.ingr')
-  span.forEach(element => {
-    element.addEventListener('click',()=>{
-      if(tagTable.includes(element.innerHTML)){
-        console.log(element.innerHTML, "is already in tag container")
-      }else{
-        tagTable.push(element.innerHTML)
-        element.classList.add('alreadyClicked')
-        console.log(tagTable)
-        
-        const result = filterByIngredient(tagTable, recipes);
-        displayData(result)
 
-        createTag(element)
-        closeTag(tagTable)
+  let span = document.querySelectorAll('.ingr');
+  span.forEach(element => {
+    element.addEventListener('click', () => {
+      const ingredient = element.innerHTML.trim();
+      if (tagTable.includes(ingredient)) {
+        console.log(ingredient, "is already in tag container");
+      } else {
+        tagTable.push(ingredient);
+        element.classList.add('alreadyClicked');
+        console.log(tagTable);
+        const result = filterSearch(tagTable.filter(tag => tag !== undefined), recipes);
+        displayData(result);
+        createTag(element, "ingredient");
+        closeTag(tagTable);
       }
-  })
+    });
   });
-  displayData(recipes)
+
+  displayData(recipes);
 }
 
-async function initAppareil(){
-  let appa = document.getElementById('appareil')
-
+async function initAppareil() {
+  let appa = document.getElementById('appareil');
   appa.style.display = "none";
 
+  let appareilModel = new AppareilModel();
   let appareils = await appareilModel.getAppareils();
-  for (let i = 0; i < appareils.length; i++){
-    appa.innerHTML+=`<span index=${i} class="appa">${appareils[i]}</span>`
+
+  for (let i = 0; i < appareils.length; i++) {
+    appa.innerHTML += `<span index=${i} class="appa">${appareils[i]}</span>`;
   }
-  
-  let span = document.querySelectorAll('.appa')
+
+  let span = document.querySelectorAll('.appa');
   span.forEach(element => {
-    element.addEventListener('click',()=>{
-      if(tagTable.includes(element.innerHTML)){
-        console.log(element.innerHTML, "is already in tag container")
-      }else{
-        tagTable.push(element.innerHTML)
-        element.classList.add('alreadyClicked')
-        console.log(tagTable)
-        const result = filterByAppliance(tagTable, recipes);
-        displayData(result)
-        createTag(element)
-        closeTag(tagTable)
+    element.addEventListener('click', () => {
+      const appareil = element.innerHTML.trim();
+      if (tagTable.includes(appareil)) {
+        console.log(appareil, "is already in tag container");
+      } else {
+        tagTable.push(appareil);
+        element.classList.add('alreadyClicked');
+        console.log(tagTable);
+        const result = filterSearch(tagTable.filter(tag => tag !== undefined), recipes);
+        displayData(result);
+        createTag(element, "appareil");
+        closeTag(tagTable);
       }
-  })
+    });
   });
-  displayData(recipes)
+
+  displayData(recipes);
 }
 
-async function initUstensil(){
-  let use = document.getElementById('ustensil')
+async function initUstensil() {
+  let use = document.getElementById('ustensil');
   use.style.display = "none";
 
+  let ustensilModel = new UstensilModel();
   let ustensils = await ustensilModel.getUstensils();
-  for (let i = 0; i < ustensils.length; i++){
-    use.innerHTML+=`<span index=${i} class="use">${ustensils[i]}</span>`
+
+  for (let i = 0; i < ustensils.length; i++) {
+    use.innerHTML += `<span index=${i} class="use">${ustensils[i]}</span>`;
   }
-  let span = document.querySelectorAll('.use')
+
+  let span = document.querySelectorAll('.use');
   span.forEach(element => {
-    element.addEventListener('click',()=>{
-      if(tagTable.includes(element.innerHTML)){
-        console.log(element.innerHTML, "is already in tag container")
-      }else{
-        tagTable.push(element.innerHTML)
-        element.classList.add('alreadyClicked')
-        console.log(tagTable)
-        const result = filterByUtensils(tagTable, recipes);
-        displayData(result)
-        createTag(element)
-        closeTag(tagTable)
+    element.addEventListener('click', () => {
+      const ustensil = element.innerHTML.trim();
+      if (tagTable.includes(ustensil)) {
+        console.log(ustensil, "is already in tag container");
+      } else {
+        tagTable.push(ustensil);
+        element.classList.add('alreadyClicked');
+        console.log(tagTable);
+        const result = filterSearch(tagTable.filter(tag => tag !== undefined), recipes);
+        displayData(result);
+        createTag(element, "ustensil");
+        closeTag(tagTable);
       }
-  })
+    });
   });
-  displayData(recipes)
+
+  displayData(recipes);
 }
+
+
 
 /*Toggle Button*/
 
@@ -226,57 +342,76 @@ ustensilButton.addEventListener('click', function() {
 
 /* Tag creation and delete */ 
 
-function createTag(element){
-  let tagLine = document.getElementById("tag_container");
-  tagLine.innerHTML += `<div><p>${element.innerHTML}</p><button class="close"><i class="fa-sharp fa-solid fa-xmark"></i></button></div>`
+function createTag(element, category){
+  if (element.innerHTML) {
+    let tagLine = document.getElementById("tag_container");
+    let tagClass = "";
+    if (category === "ingredient") {
+      tagClass = "tag-ingredient";
+    } else if (category === "appareil") {
+      tagClass = "tag-appareil";
+    } else if (category === "ustensil") {
+      tagClass = "tag-ustensil";
+    }
+    tagLine.innerHTML += `<div class="${tagClass}"><p>${element.innerHTML}</p><button class="close"><i class="fa-sharp fa-solid fa-xmark"></i></button></div>`;
+  }
 }
 
-function closeTag(tagTable){
+function closeTag(tagTable) {
   let close_btn = document.querySelectorAll('.close');
-  let spaningr = document.querySelectorAll('.ingr')
-  let spanappa = document.querySelectorAll('.appa')
-  let spanuse = document.querySelectorAll('.use')
+  let spaningr = document.querySelectorAll('.ingr');
+  let spanappa = document.querySelectorAll('.appa');
+  let spanuse = document.querySelectorAll('.use');
 
-
-  
   close_btn.forEach(element => {
     element.addEventListener('click', () => {
-      let closestDiv = element.closest("div")
-      const paragraphText = closestDiv.innerText.trim()
+      let closestDiv = element.closest("div");
+      const paragraphText = closestDiv.innerText.trim();
       const index = tagTable.indexOf(paragraphText);
-      tagTable.splice(index, 1);
-      closestDiv.remove()
-      console.log(tagTable)
+      if (index !== -1) {
+        tagTable.splice(index, 1);
+      }
+      closestDiv.remove();
+      console.log(tagTable);
 
       spaningr.forEach(element => {
-        if(paragraphText === element.innerHTML){
-           element.classList.remove('alreadyClicked')
+        if (paragraphText === element.innerHTML) {
+          element.classList.remove('alreadyClicked');
         }
-      })
+      });
       spanappa.forEach(element => {
-        if(paragraphText === element.innerHTML){
-           element.classList.remove('alreadyClicked')
+        if (paragraphText === element.innerHTML) {
+          element.classList.remove('alreadyClicked');
         }
-      })
+      });
       spanuse.forEach(element => {
-        if(paragraphText === element.innerHTML){
-           element.classList.remove('alreadyClicked')
+        if (paragraphText === element.innerHTML) {
+          element.classList.remove('alreadyClicked');
         }
-      })
+      });
 
-      const resultfilter = filterByIngredient(tagTable, recipes);
-      const resultappareil = filterByAppliance(tagTable, recipes);
-      const resultuse = filterByUtensils(tagTable, recipes);
-      let allfilter = resultfilter.concat(resultappareil,resultuse)
-      displayData(allfilter);
-      console.log(tagTable);
-      if(tagTable.length === 0){
-        displayData(recipes)
+      const searchInput = search_bar.value.toLowerCase();
+      if (tagTable.length === 0 && searchInput.length === 0) {
+        filteredRecipes = [...recipes];
+      } else if (searchInput.length >= 3) {
+        filteredRecipes = search(searchInput, recipes);
+        if (tagTable.length > 0) {
+          filteredRecipes = filterSearch(tagTable, filteredRecipes);
+        }
+      } else {
+        filteredRecipes = filterSearch(tagTable, recipes);
       }
-      return tagTable
-    })
+
+      displayData(filteredRecipes);
+
+      console.log(tagTable);
+      return tagTable;
+    });
   });
 }
+
+
+
 
 initUstensil();
 initAppareil();

@@ -16,9 +16,10 @@ function recipeFactory(data) {
         
         recipesCompo.classList.add('all_recipes')
         nameRecipes.innerHTML = `${name}`;
+        nameRecipes.classList.add('name-line-clamp')
         timeRecipes.innerHTML = `${time} min`;
         descriptionRecipes.innerHTML = `${description}`;
-        descriptionRecipes.classList.add('description')
+        descriptionRecipes.classList.add('description-line-clamp')
 
         recipesCompo.appendChild(nameRecipes);
         recipesCompo.appendChild(timeRecipes);
