@@ -6,7 +6,7 @@ import { getRecipes } from './utils/getRecipes';
 import { IngredientModel } from './utils/ingredientModel';
 import { AppareilModel } from './utils/appareilModel';
 import { UstensilModel } from './utils/ustensilModel';
-import { filterSearch/*filterByIngredient, filterByAppliance, filterByUtensils*/ } from './utils/filterSearch';
+import { filterSearch } from './utils/filterSearch';
 
 document.querySelector('#app').innerHTML = `
   <div>
@@ -50,9 +50,6 @@ document.querySelector('#app').innerHTML = `
   </div>
 `;
 const data = getRecipes();
-const ingredientModel = new IngredientModel();
-const appareilModel = new AppareilModel();
-const ustensilModel = new UstensilModel();
 
 let filteredRecipes = []; // Déclaration de la variable filteredRecipes en tant que variable globale
 
@@ -93,10 +90,6 @@ async function init() {
   appa.style.display = 'none';
   use.style.display = 'none';
 
-  const ingredientModel = new IngredientModel();
-  const appareilModel = new AppareilModel();
-  const ustensilModel = new UstensilModel();
-
   let filteredRecipes = [...recipes];
   let tagTable = [];
 
@@ -112,19 +105,15 @@ async function init() {
 
   const handleTagClick = (tag) => {
     if (tagTable.includes(tag)) {
-      console.log(tag, 'is already in tag container');
       return;
     }
   
-    tagTable.push(tag);
-    console.log(tagTable);
-  
+    tagTable.push(tag);  
     const searchInput = search_bar.value.toLowerCase();
     let result = recipes;
   
     if (searchInput.length >= 3) {
       result = search(searchInput, result);
-      console.log('test');
     }
   
     if (tagTable.length > 0) {
@@ -184,8 +173,6 @@ async function init() {
   displayData(recipes);
 }
 
-
-
 /* Filter specifique */
 
 let tagTable = [];
@@ -207,11 +194,9 @@ async function initIngredient() {
     element.addEventListener('click', () => {
       const ingredient = element.innerHTML.trim();
       if (tagTable.includes(ingredient)) {
-        console.log(ingredient, "is already in tag container");
       } else {
         tagTable.push(ingredient);
         element.classList.add('alreadyClicked');
-        console.log(tagTable);
         const result = filterSearch(tagTable.filter(tag => tag !== undefined), recipes);
         displayData(result);
         createTag(element, "ingredient");
@@ -239,11 +224,9 @@ async function initAppareil() {
     element.addEventListener('click', () => {
       const appareil = element.innerHTML.trim();
       if (tagTable.includes(appareil)) {
-        console.log(appareil, "is already in tag container");
       } else {
         tagTable.push(appareil);
         element.classList.add('alreadyClicked');
-        console.log(tagTable);
         const result = filterSearch(tagTable.filter(tag => tag !== undefined), recipes);
         displayData(result);
         createTag(element, "appareil");
@@ -271,11 +254,9 @@ async function initUstensil() {
     element.addEventListener('click', () => {
       const ustensil = element.innerHTML.trim();
       if (tagTable.includes(ustensil)) {
-        console.log(ustensil, "is already in tag container");
       } else {
         tagTable.push(ustensil);
         element.classList.add('alreadyClicked');
-        console.log(tagTable);
         const result = filterSearch(tagTable.filter(tag => tag !== undefined), recipes);
         displayData(result);
         createTag(element, "ustensil");
@@ -286,8 +267,6 @@ async function initUstensil() {
 
   displayData(recipes);
 }
-
-
 
 /*Toggle Button*/
 
@@ -372,8 +351,6 @@ function closeTag(tagTable) {
         tagTable.splice(index, 1);
       }
       closestDiv.remove();
-      console.log(tagTable);
-
       spaningr.forEach(element => {
         if (paragraphText === element.innerHTML) {
           element.classList.remove('alreadyClicked');
@@ -404,14 +381,10 @@ function closeTag(tagTable) {
 
       displayData(filteredRecipes);
 
-      console.log(tagTable);
       return tagTable;
     });
   });
 }
-
-
-
 
 initUstensil();
 initAppareil();

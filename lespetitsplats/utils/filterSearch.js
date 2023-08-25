@@ -1,31 +1,3 @@
- /*export function filterByIngredient(tagTable, recipes) {
-  let filteredTagIngredient = recipes.filter(recipe => {
-    const ingredientsTAB = recipe.ingredients.map(ingredient => ingredient.ingredient);
-    return tagTable.every(tag => ingredientsTAB.includes(tag));
-  });
-
-  console.log(filteredTagIngredient);
-  return filteredTagIngredient;
-}
-
- export function filterByAppliance(tagTable, recipes) {
-  let filteredTagAppliance = recipes.filter(recipe => {
-    return tagTable.every(tag => recipe.appliance.includes(tag));
-  });
-
-  console.log(filteredTagAppliance);
-  return filteredTagAppliance;
-}
- 
- export function filterByUtensils(tagTable, recipes) {
-  let filteredTagUstensil = recipes.filter(recipe => {
-    return tagTable.every(tag => recipe.ustensils.includes(tag));
-  });
-
-  console.log(filteredTagUstensil);
-  return filteredTagUstensil;
-}*/
-
 export function filterSearch(tags, recipes) {
   let filteredRecipes = [...recipes]; // Copie les recettes dans un tableau filtré initial
 
@@ -40,6 +12,5 @@ export function filterSearch(tags, recipes) {
     });
   });
 
-  console.log(filteredRecipes); // Affiche les recettes filtrées dans la console
   return filteredRecipes; // Retourne les recettes filtrées
 }

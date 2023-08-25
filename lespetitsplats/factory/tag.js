@@ -4,7 +4,6 @@ function tagFactory() {
   function displayTagFactory() {
 
     let ingrFilter = document.getElementById('ingredientFilter')
-    console.log(ingrFilter.value)
     let tag_input = document.createElement('div')
     tag_input.classList.add("tagInput")
     let tag = document.createElement('div')
