@@ -6,7 +6,6 @@ export class AppareilModel {
 
     let recipes = await getRecipes();
     let listeDesAppareilsDeToutesLesRecettes = [];
-    console.log(recipes)
 
     recipes.forEach((recipe) => {
       recipe.appliances

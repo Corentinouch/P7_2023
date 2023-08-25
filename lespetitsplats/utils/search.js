@@ -1,20 +1,18 @@
 export function search(searchInput, recipes) {
+    const matchingRecipes = [];
 
-    const filtered = recipes.filter((recipe) => {
+    recipes.forEach((recipe) => {
+        const foundInNameOrDescription = recipe.name.toLowerCase().includes(searchInput.toLowerCase()) ||
+                                          recipe.description.toLowerCase().includes(searchInput.toLowerCase());
 
-        console.log(recipe)
-        if (recipe.name.toLowerCase().includes(searchInput.toLowerCase()) || recipe.description.toLowerCase().includes(searchInput.toLowerCase())) {
-            return recipe
-        } else {
-            for(let i=0; i<recipe.ingredients.length; i++){
-                //console.log(recipe.ingredients[i])
-                if (recipe.ingredients[i].ingredient.toLowerCase().includes(searchInput.toLowerCase())){
-                   // console.log(recipe)
-                    return recipe
-                }
-            }
+        const foundInIngredients = recipe.ingredients.some((ingredient) =>
+            ingredient.ingredient.toLowerCase().includes(searchInput.toLowerCase())
+        );
+
+        if (foundInNameOrDescription || foundInIngredients) {
+            matchingRecipes.push(recipe);
         }
-    })
-    console.log(filtered)
-    return filtered
+    });
+
+    return matchingRecipes;
 }
